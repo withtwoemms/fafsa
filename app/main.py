@@ -6,7 +6,7 @@ from fastapi.concurrency import asynccontextmanager
 from fastapi.responses import JSONResponse
 
 from app.models import ApplicationData
-from app.rules.engine import RulesEngine
+from app.rules.engine import RulesEngine, ValidationSummary
 
 
 app = FastAPI(
@@ -36,7 +36,10 @@ async def lifespan(app: FastAPI):
 
 
 def get_rules_engine(request: Request) -> RulesEngine:
-    return "soon!"
+    if not hasattr(request.app.state, "rules_engine"):
+        rules_path = Path(__file__).parent / "config" / "rules.yaml"
+        request.app.state.rules_engine = RulesEngine.from_yaml(rules_path)
+    return request.app.state.rules_engine
 
 
 # ---------------------------------------------------------------------------
