@@ -79,8 +79,97 @@ tests/
 
 ---
 
+## 6. Rules Engine Architecture
+**Decision:** Implement a *YAML-driven validation engine* using discriminated rule types.
+
+**Rationale:**
+- FAFSA validation requirements evolve frequently; external rules reduce code churn.
+- Clear separation between **policy** (rules) and **logic** (engine execution).
+- Ability to add new rule types without modifying application entrypoints.
+- Supports explainability for downstream auditors.
+
+**Alternatives Considered:**
+- Hardcoding validation rules inside Pydantic validators.
+- Using JSON Schema validation.
+
+**Trade-offs:**
+- YAML introduces parsing overhead.
+- Rule ordering must be deterministic.
+
+---
+
+## 7. Rules Output Format — Structured RuleResult Objects
+**Decision:** Use the structure:
+```
+valid: bool
+errors: List[RuleResult]
+warnings: List[RuleResult]
+successes: List[RuleResult]
+```
+
+**Rationale:**
+- Allows UIs and external systems to reason about *all* rule evaluations.
+- Transparent debugging for policy reviewers.
+- Clean partitioning of results by outcome.
+
+**Trade-offs:**
+- Larger payload sizes when rules pass.
+- Requires helper functions in tests to query results.
+
+---
+
+## 8. Single-Pass Categorization in Validation Summary
+**Decision:** Categorize rule outcomes in a single iterative pass.
+
+**Rationale:**
+- Improves performance (O(n) vs. multiple scans).
+- Simplifies reasoning about summary generation.
+- Supports future extensions (e.g., INFO-level rules).
+
+---
+
+## 9. JSON Response Contract Stability
+**Decision:** Maintain stable top-level response keys:
+```
+valid, errors, warnings, successes
+```
+
+**Rationale:**
+- Makes downstream systems resilient to rule changes.
+- Supports forward-compatible UI updates.
+- Ensures error classification is always available.
+
+---
+
+## 10. Use of Lifespan Startup for Rule Loading
+**Decision:** Load YAML rules using FastAPI's lifespan mechanism.
+
+**Rationale:**
+- Avoids deprecation issues with legacy startup events.
+- Supports async initialization if needed later.
+- Ensures rules are not loaded per request.
+
+---
+
+## 11. Use of `RuleSeverity` (ERROR vs WARNING)
+
+**Decision:** Introduce a `RuleSeverity` enum that classifies rule outcomes into **ERROR** (application-invalidating) and **WARNING** (non-blocking advisories).
+
+**Rationale:**
+- Matches real FAFSA workflows: Some issues must block processing, while others should be surfaced but not prevent submission.
+- Enhances feedback clarity: Clients can present errors and warnings differently, improving user understanding and remediation.
+- Supports policy rollout: New rules can begin as warnings before being elevated to errors, reducing disruptions.
+- Improves auditability: Separating severities helps reviewers understand which issues were critical versus informational.
+- Future extensibility: Additional severities (e.g., INFO, SKIPPED) can be added without changing the data model.
+
+**Trade-offs:**
+- More complex client logic: Consumers must interpret severity rather than treating all failures equally.
+- Larger responses: Returning categorized rule results increases payload size.
+- More verbose tests: Tests must assert severity-specific conditions rather than a single failure list.
+
+---
+
 ## Future Considerations
-- Rules Engine architecture and output formats
 - Versioned rule sets for policy changes across academic years.
 - Rule caching and hot-reload for operational environments.
 - A rules authoring UI for non-engineering stakeholders.

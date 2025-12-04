@@ -1,0 +1,157 @@
+rules:
+
+  #
+  # --- TRANSFORM RULES ---
+  #
+  - type: transform
+    name: derive_age
+    field: studentInfo.dateOfBirth
+    transform: age_years
+    output_field: studentInfo.age
+
+
+  #
+  # --- VALUE COMPARISON RULES ---
+  # field vs literal threshold
+  #
+  - type: value_comparison
+    name: student_age_minimum
+    field: studentInfo.age
+    operator: gte
+    value: 14
+    severity: error
+    message: "Student must be at least 14 years old."
+
+  - type: value_comparison
+    name: student_income_non_negative
+    field: income.studentIncome
+    operator: gte
+    value: 0
+    severity: error
+    message: "Student income cannot be negative."
+
+  - type: value_comparison
+    name: parent_income_non_negative
+    field: income.parentIncome
+    operator: gte
+    value: 0
+    severity: error
+    message: "Parent income cannot be negative."
+
+
+  #
+  # --- STRING MATCH (regex) RULES ---
+  #
+  - type: string_match
+    name: student_ssn_format
+    field: studentInfo.ssn
+    pattern: "^[0-9]{9}$"
+    severity: error
+    message: "SSN must be exactly 9 digits."
+
+  - type: string_match
+    name: spouse_ssn_format_if_present
+    field: spouseInfo.ssn
+    pattern: "^[0-9]{9}$"
+    severity: error
+    message: "Spouse SSN must be exactly 9 digits."
+
+
+  #
+  # --- VALUE IN SET RULES ---
+  #
+  - type: value_in_set
+    name: state_code_valid
+    field: stateOfResidence
+    allowed_values:
+      - AL
+      - AK
+      - AZ
+      - AR
+      - CA
+      - CO
+      - CT
+      - DE
+      - FL
+      - GA
+      - HI
+      - ID
+      - IL
+      - IN
+      - IA
+      - KS
+      - KY
+      - LA
+      - ME
+      - MD
+      - MA
+      - MI
+      - MN
+      - MS
+      - MO
+      - MT
+      - NE
+      - NV
+      - NH
+      - NJ
+      - NM
+      - NY
+      - NC
+      - ND
+      - OH
+      - OK
+      - OR
+      - PA
+      - RI
+      - SC
+      - SD
+      - TN
+      - TX
+      - UT
+      - VT
+      - VA
+      - WA
+      - WV
+      - WI
+      - WY
+      - DC
+    severity: error
+    message: "State must be valid 2-letter US code."
+
+
+  #
+  # --- FIELD COMPARISON RULES ---
+  # field vs field
+  #
+  - type: field_comparison
+    name: college_not_exceed_household
+    left_field: household.numberInCollege
+    operator: lte
+    right_field: household.numberInHousehold
+    severity: error
+    message: "Number in college cannot exceed number in household."
+
+
+  #
+  # --- CONDITIONAL PRESENCE RULES ---
+  #
+  - type: requires
+    name: parent_income_required_if_dependent
+    when:
+      field: dependencyStatus
+      equals: dependent
+    required_fields:
+      - income.parentIncome
+    severity: error
+    message: "Dependent students must report parent income."
+
+  - type: requires
+    name: married_requires_spouse_info
+    when:
+      field: maritalStatus
+      equals: married
+    required_fields:
+      - spouseInfo.name
+      - spouseInfo.ssn
+    severity: error
+    message: "Married students must provide spouse name and SSN."

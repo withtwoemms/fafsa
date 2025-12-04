@@ -80,7 +80,9 @@ python-dotenv==1.2.1
 python-multipart==0.0.20
     # via fastapi
 pyyaml==6.0.3
-    # via uvicorn
+    # via
+    #   app
+    #   uvicorn
 rich==14.2.0
     # via
     #   rich-toolkit
