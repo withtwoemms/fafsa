@@ -29,3 +29,27 @@ def set_by_path(obj: Dict[str, Any], path: str, value: Any) -> None:
             current[p] = {}
         current = current[p]
     current[parts[-1]] = value
+
+
+# ---------------------------------------------------------------------------
+# Transform library (age, etc.)
+# ---------------------------------------------------------------------------
+
+def transform_age_years(value: Any) -> Optional[int]:
+    """Transform a date string (ISO format) into age in years."""
+    if value is None:
+        return None
+    try:
+        dob = datetime.date.fromisoformat(str(value))
+    except ValueError:
+        return None
+    today = datetime.date.today()
+    years = today.year - dob.year - (
+        (today.month, today.day) < (dob.month, dob.day)
+    )
+    return years
+
+
+TRANSFORM_REGISTRY: Dict[str, Callable[[Any], Any]] = {
+    "age_years": transform_age_years,
+}
