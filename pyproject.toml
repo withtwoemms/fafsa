@@ -1,0 +1,36 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "A simple FastAPI app simulating FAFSA application evaluation."
+authors = [
+    { name = "Emmanuel I. Obi", email = "withtwoemms@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi==0.121.1",
+    "fastapi[standard]==0.121.1",
+    "uvicorn==0.38.0",
+    "pydantic==2.12.4",
+    "httpx==0.28.1",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.4.2",
+    "pytest-asyncio>=0.25.0",
+    "testcontainers>=4.13.2",
+]
+
+[tool.uv]
+python-preference = "managed"
+cache-dir = ".uv_cache"
+concurrent-downloads = 5
+concurrent-installs = 5
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["app"]
