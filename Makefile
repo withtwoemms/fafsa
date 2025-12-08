@@ -60,6 +60,10 @@ integration-tests: build
 
 tests: unit-tests integration-tests
 
+${UV_VENV}:
+	@echo "${GREEN}Creating local virtual environment (${UV_VENV})...${RESET}"
+	@uv venv ${UV_VENV}
+
 ${DEPS_STAMP}: pyproject.toml uv.lock | ${UV_VENV}
 	@echo "Syncing dependencies into ${UV_VENV}"
 	@UV_VENV=${UV_VENV} uv sync --extra test
