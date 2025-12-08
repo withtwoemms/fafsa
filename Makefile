@@ -1,6 +1,7 @@
 # --- Configuration ---
 PYTHON ?= python3
 UV_BIN := $(shell command -v uv 2>/dev/null)
+UV_VENV ?= .venv
 APP := app/main.py
 IMAGE := eobi-app:latest
 
@@ -14,7 +15,7 @@ RESET := \033[0m
 help:
 	@echo "\n${YELLOW}Available commands:${RESET}\n"
 	@echo "  ${CYAN}uv${RESET}                - Download uv if not installed"
-	@echo "  ${CYAN}venv${RESET}              - Create a local virtual environment (.venv) using uv"
+	@echo "  ${CYAN}venv${RESET}              - Create a local virtual environment (${UV_VENV}) using uv"
 	@echo "  ${CYAN}install${RESET}           - Install dependencies via uv"
 	@echo "  ${CYAN}install-test${RESET}      - Install test dependencies via uv"
 	@echo "  ${CYAN}requirements${RESET}      - Render dependencies as requirements.txt"
@@ -59,8 +60,8 @@ integration-tests: build
 tests: unit-tests integration-tests
 
 venv:
-	@echo "${GREEN}Creating local virtual environment (.venv) with uv...${RESET}"
-	@uv venv .venv
-	@echo "${CYAN}To activate:${RESET} source .venv/bin/activate"
+	@echo "${GREEN}Creating local virtual environment (${UV_VENV}) with uv...${RESET}"
+	@uv venv ${UV_VENV}
+	@echo "${CYAN}To activate:${RESET} source ${UV_VENV}/bin/activate"
 
 .PHONY: help uv install install-test requirements dev build unit-tests integration-tests tests venv
