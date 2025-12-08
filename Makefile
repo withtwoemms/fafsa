@@ -54,10 +54,10 @@ build: requirements
 	docker build -t $(IMAGE) .
 
 unit-tests:
-	@pytest -s -v tests/unit
+	@uv run pytest -s -v tests/unit
 
 integration-tests: build
-	@pytest -s -v tests/integration
+	@uv run pytest -s -v tests/integration
 
 tests: unit-tests integration-tests
 
