@@ -25,6 +25,7 @@ help:
 	@echo "  ${CYAN}tests${RESET}             - Run all tests"
 	@echo "  ${CYAN}unit-tests${RESET}        - Run unit tests"
 	@echo "  ${CYAN}integration-tests${RESET} - Run container tests"
+	@echo "  ${CYAN}clean${RESET}             - Clean build artifacts and dependency state"
 	@echo
 
 uv:
@@ -74,4 +75,10 @@ venv:
 	@uv venv ${UV_VENV}
 	@echo "${CYAN}To activate:${RESET} source ${UV_VENV}/bin/activate"
 
-.PHONY: help uv install install-test requirements dev build unit-tests integration-tests tests venv
+clean:
+	@echo "${GREEN}Cleaning build artifacts and dependency state...${RESET}"
+	@rm -f ${DEPS_STAMP}
+	@rm -rf .pytest_cache
+	@find . -type d -name __pycache__ -exec rm -rf {} +
+
+.PHONY: help uv install install-test requirements dev build unit-tests integration-tests tests venv clean
