@@ -16,11 +16,9 @@ RESET := \033[0m
 help:
 	@echo "\n${YELLOW}Available commands:${RESET}\n"
 	@echo "  ${CYAN}uv${RESET}                - Download uv if not installed"
-	@echo "  ${CYAN}venv${RESET}              - Create a local virtual environment (${UV_VENV}) using uv"
-	@echo "  ${CYAN}install${RESET}           - Install dependencies via uv"
-	@echo "  ${CYAN}install-test${RESET}      - Install test dependencies via uv"
-	@echo "  ${CYAN}requirements${RESET}      - Render dependencies as requirements.txt"
+	@echo "  ${CYAN}venv${RESET}              - Create local virtual environment @ \"${UV_VENV}/\" replete with dependencies using uv"
 	@echo "  ${CYAN}dev${RESET}               - Run dev server"
+	@echo "  ${CYAN}requirements${RESET}      - Render dependencies as requirements.txt"
 	@echo "  ${CYAN}build${RESET}             - Build Docker image for the app"
 	@echo "  ${CYAN}tests${RESET}             - Run all tests"
 	@echo "  ${CYAN}unit-tests${RESET}        - Run unit tests"
@@ -46,17 +44,17 @@ install: uv install-test
 requirements:
 	@uv export -o requirements.txt --no-extra test --no-hashes --no-editable --format requirements-txt
 
-dev: install
+dev: ${DEPS_STAMP}
 	@uv run fastapi run $(APP) --reload
 
 build: requirements
 	@echo "${GREEN}Building Docker image: $(IMAGE)${RESET}"
 	docker build -t $(IMAGE) .
 
-unit-tests:
+unit-tests: ${DEPS_STAMP}
 	@uv run pytest -s -v tests/unit
 
-integration-tests: build
+integration-tests: build ${DEPS_STAMP}
 	@uv run pytest -s -v tests/integration
 
 tests: unit-tests integration-tests
@@ -70,15 +68,17 @@ ${DEPS_STAMP}: pyproject.toml uv.lock | ${UV_VENV}
 	@UV_VENV=${UV_VENV} uv sync --extra test
 	@touch ${DEPS_STAMP}
 
-venv:
-	@echo "${GREEN}Creating local virtual environment (${UV_VENV}) with uv...${RESET}"
-	@uv venv ${UV_VENV}
-	@echo "${CYAN}To activate:${RESET} source ${UV_VENV}/bin/activate"
+venv: ${DEPS_STAMP}
+	@echo "${GREEN}Installing all dependencies into ${UV_VENV}...${RESET}"
+	@UV_VENV=${UV_VENV} uv sync --extra test
+	@echo "${CYAN}Done.${RESET}"
+	@echo "${CYAN}Activate with:${RESET} source ${UV_VENV}/bin/activate"
 
 clean:
 	@echo "${GREEN}Cleaning build artifacts and dependency state...${RESET}"
 	@rm -f ${DEPS_STAMP}
 	@rm -rf .pytest_cache
 	@find . -type d -name __pycache__ -exec rm -rf {} +
+
 
 .PHONY: help uv install install-test requirements dev build unit-tests integration-tests tests venv clean
