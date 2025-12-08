@@ -2,6 +2,7 @@
 PYTHON ?= python3
 UV_BIN := $(shell command -v uv 2>/dev/null)
 UV_VENV ?= .venv
+DEPS_STAMP := ${UV_VENV}/.deps-installed
 APP := app/main.py
 IMAGE := eobi-app:latest
 
@@ -58,6 +59,11 @@ integration-tests: build
 	@pytest -s -v tests/integration
 
 tests: unit-tests integration-tests
+
+${DEPS_STAMP}: pyproject.toml uv.lock | ${UV_VENV}
+	@echo "Syncing dependencies into ${UV_VENV}"
+	@UV_VENV=${UV_VENV} uv sync --extra test
+	@touch ${DEPS_STAMP}
 
 venv:
 	@echo "${GREEN}Creating local virtual environment (${UV_VENV}) with uv...${RESET}"
