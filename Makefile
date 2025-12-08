@@ -18,7 +18,7 @@ help:
 	@echo "  ${CYAN}install${RESET}           - Install dependencies via uv"
 	@echo "  ${CYAN}install-test${RESET}      - Install test dependencies via uv"
 	@echo "  ${CYAN}requirements${RESET}      - Render dependencies as requirements.txt"
-	@echo "  ${CYAN}run${RESET}               - Run dev server"
+	@echo "  ${CYAN}dev${RESET}               - Run dev server"
 	@echo "  ${CYAN}build${RESET}             - Build Docker image for the app"
 	@echo "  ${CYAN}tests${RESET}             - Run all tests"
 	@echo "  ${CYAN}unit-tests${RESET}        - Run unit tests"
@@ -43,7 +43,7 @@ install: uv install-test
 requirements:
 	@uv export -o requirements.txt --no-extra test --no-hashes --no-editable --format requirements-txt
 
-run: install
+dev: install
 	@uv run fastapi run $(APP) --reload
 
 build: requirements
@@ -63,4 +63,4 @@ venv:
 	@uv venv .venv
 	@echo "${CYAN}To activate:${RESET} source .venv/bin/activate"
 
-.PHONY: help uv install install-test requirements run build unit-tests integration-tests tests venv
+.PHONY: help uv install install-test requirements dev build unit-tests integration-tests tests venv
