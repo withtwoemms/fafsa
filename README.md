@@ -37,7 +37,7 @@ Below are the key Makefile commands:
 | `make tests` | run entire test suite |
 | `make clean` | reset build state |
 
-If you've got the dev server running, endpoints can visited at:
+If you've got the dev server running, endpoints can be visited at:
 
 - http://localhost:8000/docs
 - http://localhost:8000/health
