@@ -26,52 +26,21 @@ The service exposes a simple HTTP API for validating applications and returns st
 
 ---
 
-## 📦 Installing Dependencies
+## 🚦 Quickstart Guide
 
-```
-make install
-```
+View all available buildtool commands with `make`.
+Below are the key Makefile commands:
 
-Install only test dependencies:
+| Command | Description |
+|---------|-------------|
+| `make dev` | run a local dev server |
+| `make tests` | run entire test suite |
+| `make clean` | reset build state |
 
-```
-make install-test
-```
-
----
-
-## ▶️ Running the Development Server
-
-```
-make run
-```
-
-Visit:
+If you've got the dev server running, endpoints can visited at:
 
 - http://localhost:8000/docs
 - http://localhost:8000/health
-
----
-
-## 🧪 Running Tests
-
-Run unit tests:
-
-```
-make unit-tests
-```
-
-Run integration tests:
-
-```
-make integration-tests
-```
-
-Run all tests:
-
-```
-make tests
-```
 
 ---
 
@@ -103,18 +72,6 @@ POST `/validate` validates an application and returns:
   "successes": [...]
 }
 ```
-
----
-
-## 👨‍💻 Development Workflow Summary
-
-| Task | Command |
-|------|---------|
-| Install deps | make install |
-| Run dev server | make run |
-| Unit tests | make unit-tests |
-| Integration tests | make integration-tests |
-| Build Docker image | make build |
 
 ---
 
