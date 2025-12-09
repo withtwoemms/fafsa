@@ -1,6 +1,5 @@
 # --- Configuration ---
 PYTHON ?= python3
-UV_BIN := $(shell command -v uv 2>/dev/null)
 UV_VENV ?= .venv
 UV_INSTALLED := .uv-installed
 DEPS_INSTALLED := ${UV_VENV}/.deps-installed
@@ -27,12 +26,10 @@ help:
 	@echo
 
 ${UV_INSTALLED}:
-ifndef UV_BIN
-	@echo "${GREEN}Installing uv...${RESET}"
-	@curl -LsSf https://astral.sh/uv/install.sh | sh
-else
-	@echo "${CYAN}uv already installed.${RESET}"
-endif
+	@command -v uv >/dev/null 2>&1 || { \
+		echo "${GREEN}Installing uv...${RESET}"; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	}
 	@touch ${UV_INSTALLED}
 
 install-test: ${UV_INSTALLED}
@@ -75,11 +72,23 @@ venv: ${UV_INSTALLED} ${DEPS_INSTALLED}
 	@echo "${CYAN}Done.${RESET}"
 	@echo "${CYAN}Activate with:${RESET} source ${UV_VENV}/bin/activate"
 
-clean:
+clean-uv:
+	@echo "${YELLOW}Removing uv and all associated state (destructive)...${RESET}"
+	@if command -v uv >/dev/null 2>&1; then \
+		uv cache clean || true; \
+		rm -rf "$$(uv python dir)" "$$(uv tool dir)"; \
+		rm -f "$${HOME}/.local/bin/uv" "$${HOME}/.local/bin/uvx"; \
+		rm -f ${UV_INSTALLED}; \
+		echo "${GREEN}uv fully removed.${RESET}"; \
+	else \
+		echo "${CYAN}uv not installed; nothing to clean.${RESET}"; \
+	fi
+
+clean: clean-uv
 	@echo "${GREEN}Cleaning build artifacts and dependency state...${RESET}"
 	@rm -f ${DEPS_INSTALLED} ${UV_INSTALLED}
 	@rm -rf ${UV_VENV} .uv_cache .pytest_cache
 	@find . -type d -name __pycache__ -exec rm -rf {} +
 
 
-.PHONY: help install install-test requirements dev build unit-tests integration-tests tests venv clean
+.PHONY: help install install-test requirements dev build unit-tests integration-tests tests venv clean-uv clean

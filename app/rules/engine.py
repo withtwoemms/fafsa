@@ -116,7 +116,7 @@ class RulesEngine:
         self._transforms = transforms
 
     @classmethod
-    def from_yaml(cls, path: str) -> RulesEngine:
+    def from_yaml(cls, path: str) -> "RulesEngine":
         with open(path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
 
