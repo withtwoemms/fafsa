@@ -3,7 +3,7 @@ PYTHON ?= python3
 UV_BIN := $(shell command -v uv 2>/dev/null)
 UV_VENV ?= .venv
 UV_INSTALLED := .uv-installed
-DEPS_STAMP := ${UV_VENV}/.deps-installed
+DEPS_INSTALLED := ${UV_VENV}/.deps-installed
 APP := app/main.py
 IMAGE := eobi-app:latest
 
@@ -45,17 +45,17 @@ install: ${UV_INSTALLED} install-test
 requirements: ${UV_INSTALLED}
 	@uv export -o requirements.txt --no-extra test --no-hashes --no-editable --format requirements-txt
 
-dev: ${UV_INSTALLED} ${DEPS_STAMP}
+dev: ${UV_INSTALLED} ${DEPS_INSTALLED}
 	@uv run fastapi run $(APP) --reload
 
 build: requirements
 	@echo "${GREEN}Building Docker image: $(IMAGE)${RESET}"
 	docker build -t $(IMAGE) .
 
-unit-tests: ${UV_INSTALLED} ${DEPS_STAMP}
+unit-tests: ${UV_INSTALLED} ${DEPS_INSTALLED}
 	@uv run pytest -s -v tests/unit
 
-integration-tests: ${UV_INSTALLED} build ${DEPS_STAMP}
+integration-tests: ${UV_INSTALLED} build ${DEPS_INSTALLED}
 	@uv run pytest -s -v tests/integration
 
 tests: unit-tests integration-tests
@@ -64,12 +64,12 @@ ${UV_VENV}: ${UV_INSTALLED}
 	@echo "${GREEN}Creating local virtual environment (${UV_VENV})...${RESET}"
 	@uv venv ${UV_VENV}
 
-${DEPS_STAMP}: pyproject.toml uv.lock | ${UV_VENV}
+${DEPS_INSTALLED}: pyproject.toml uv.lock | ${UV_VENV}
 	@echo "Syncing dependencies into ${UV_VENV}"
 	@UV_VENV=${UV_VENV} uv sync --extra test
-	@touch ${DEPS_STAMP}
+	@touch ${DEPS_INSTALLED}
 
-venv: ${UV_INSTALLED} ${DEPS_STAMP}
+venv: ${UV_INSTALLED} ${DEPS_INSTALLED}
 	@echo "${GREEN}Installing all dependencies into ${UV_VENV}...${RESET}"
 	@UV_VENV=${UV_VENV} uv sync --extra test
 	@echo "${CYAN}Done.${RESET}"
@@ -77,7 +77,7 @@ venv: ${UV_INSTALLED} ${DEPS_STAMP}
 
 clean:
 	@echo "${GREEN}Cleaning build artifacts and dependency state...${RESET}"
-	@rm -f ${DEPS_STAMP} ${UV_INSTALLED}
+	@rm -f ${DEPS_INSTALLED} ${UV_INSTALLED}
 	@rm -rf ${UV_VENV} .uv_cache .pytest_cache
 	@find . -type d -name __pycache__ -exec rm -rf {} +
 
